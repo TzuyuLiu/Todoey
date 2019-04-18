@@ -12,10 +12,17 @@ class ToDoListViewController: UITableViewController{
 
     @IBOutlet var messageTableView: UITableView!
     
+    let defaults = UserDefaults.standard
+    
     var itemArray = ["Find Mike","Buy Eggos","Destory Demogorgon"]
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
+        
+        //將存在Documents裡面的data放回itemArray
+        if let  items = defaults.array(forKey: "TodoListArray") as? [String]{
+            itemArray = items
+        }
         
     }
 
@@ -70,6 +77,8 @@ class ToDoListViewController: UITableViewController{
             self.itemArray.append(textFiled.text!)
             print("Success!")
             print(textFiled.text)
+            
+            self.defaults.set(self.itemArray, forKey: "TodoListArray")  //使用defaluts來將資料儲存進iphone記憶體中(Documents資料夾裡)，記憶體內容不會隨著關閉程式而消失，儲存格式永遠都是plist，所以要有key去儲存value
             
             self.tableView.reloadData() //增加東西之後都需要reload data才會將新增的東西顯示出來
         }
