@@ -14,13 +14,26 @@ class ToDoListViewController: UITableViewController{
     
     let defaults = UserDefaults.standard
     
-    var itemArray = ["Find Mike","Buy Eggos","Destory Demogorgon"]
+    var itemArray = [Item]()
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
         
+        let newItem = Item()
+        newItem.title = "Find Mike"
+        itemArray.append(newItem)
+        
+        let newItem2 = Item()
+        newItem2.title = "Buy Eggos"
+        itemArray.append(newItem2)
+        
+        let newItem3 = Item()
+        newItem3.title = "Destory Demogorgon"
+        itemArray.append(newItem3)
+
+        
         //將存在Documents裡面的data放回itemArray
-        if let  items = defaults.array(forKey: "TodoListArray") as? [String]{
+        if let  items = defaults.array(forKey: "TodoListArray") as? [Item]{
             itemArray = items
         }
         
@@ -36,12 +49,25 @@ class ToDoListViewController: UITableViewController{
     //顯示每一列的資料
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        //
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDOItemCell" , for: indexPath)
+        //let cell = UITableViewCell(Style: .default, reuseIdentifier:"ToDoItemCell")   不用這行是因為cell一到view之外就會被砍掉，重新製照一個cell
+        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell" , for: indexPath)
         
+        print("cell for row at index path call")
+        
+        let item = itemArray[indexPath.row]
     
-        cell.textLabel?.text = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
         
+        //Ternary operator ==>
+        // value = condition ? valueIfTrue : valueIfFalse
+        
+        cell.accessoryType = item.done == true ? .checkmark : .none //等同以下註解程式
+        //增加或移除原本有的check markaccessoryType在Main.storyborad 中的 ToDOItemCell 可以找到
+//        if itemArray[indexPath.row].done == true{
+//            cell.accessoryType = .checkmark
+//        }else{
+//            cell.accessoryType = .none
+//        }
         
         return cell
     }
@@ -51,16 +77,19 @@ class ToDoListViewController: UITableViewController{
     //ells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         // print(indexPath.row)
-        print(itemArray[indexPath.row])
+        //print(itemArray[indexPath.row])
         
         tableView.deselectRow(at: indexPath , animated: true)   //選了之後會自己灰色調會消失
         
-        //增加或移除原本有的check markaccessoryType在Main.storyborad 中的 ToDOItemCell 可以找到
-        if  tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark{
-             tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        }else{
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done //等同以下五行
+//        if itemArray[indexPath.row].done == false{
+//            itemArray[indexPath.row].done = true
+//        }else{
+//            itemArray[indexPath.row].done = false
+//        }
+        
+        tableView.reloadData()
+
 
     }
     //Mark - Add New Items
@@ -74,7 +103,9 @@ class ToDoListViewController: UITableViewController{
         let action = UIAlertAction(title: "Add item", style: .default) { (action) in
             //what will happen once the user clicks the Add item button on our UIAlert
             
-            self.itemArray.append(textFiled.text!)
+            let newItem = Item()
+            newItem.title = textFiled.text!
+            self.itemArray.append(newItem)
             print("Success!")
             print(textFiled.text)
             
