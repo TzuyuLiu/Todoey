@@ -12,7 +12,7 @@ class ToDoListViewController: UITableViewController{
 
     @IBOutlet var messageTableView: UITableView!
     
-    let itemArray = ["Find Mike","Buy Eggos","Destory Demogorgon"]
+    var itemArray = ["Find Mike","Buy Eggos","Destory Demogorgon"]
     override func viewDidLoad() {
         super.viewDidLoad()
         // Do any additional setup after loading the view.
@@ -55,6 +55,34 @@ class ToDoListViewController: UITableViewController{
             tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
         }
 
+    }
+    //Mark - Add New Items
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        
+        var textFiled = UITextField()
+        
+        let alert = UIAlertController(title: "Add New Todoey item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add item", style: .default) { (action) in
+            //what will happen once the user clicks the Add item button on our UIAlert
+            
+            self.itemArray.append(textFiled.text!)
+            print("Success!")
+            print(textFiled.text)
+            
+            self.tableView.reloadData() //增加東西之後都需要reload data才會將新增的東西顯示出來
+        }
+        
+        //在alert的時候增加text field，按下add button之後就會觸發裡面的事件(在使用者送出textfield之前)
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Create new item"
+            textFiled = alertTextField  //將alertTextField裡的內容從closure拿出來
+        }
+        
+        alert.addAction(action)
+        
+        present(alert, animated: true, completion: nil)
     }
 }
 
