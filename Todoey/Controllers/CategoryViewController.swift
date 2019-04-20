@@ -38,6 +38,27 @@ class CategoryViewController: UITableViewController {
         return categories.count
     }
     
+    
+    
+    //Mark - TableView Delegate Methods
+
+    override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        //didSelectRowAt:當觸控某一個row時會觸發此
+        
+        performSegue(withIdentifier: "goToItems", sender: self)
+    }
+    
+    //在執行performSegue之前會先執行以下function
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
+        let destinationVC = segue.destination as! ToDoListViewController    //所以若有多個view，在此就可以選擇要去哪個畫面
+        
+        if let indexPath = tableView.indexPathForSelectedRow{
+            destinationVC.selectedCategory = categories[indexPath.row]
+        }
+    }
+    
+    
+    
     //Mark - Manipulation Methods
     
     func saveCategories(){
@@ -66,7 +87,6 @@ class CategoryViewController: UITableViewController {
     
     //Mark - Add New Categories
 
-
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
         var textField = UITextField()
@@ -93,7 +113,6 @@ class CategoryViewController: UITableViewController {
         present(alert, animated: true, completion: nil)
     }
     
-    //Mark - TableView Delegate Methods
     
     
     

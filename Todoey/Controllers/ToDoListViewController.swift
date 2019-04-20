@@ -16,6 +16,11 @@ class ToDoListViewController: UITableViewController {
     let defaults = UserDefaults.standard
     let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
     var itemArray = [Item]()
+    var selectedCategory : Category?{
+        didSet{
+            loadItems()
+        }
+    }
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext   //用來與persistent container溝通
 
     
@@ -24,10 +29,6 @@ class ToDoListViewController: UITableViewController {
         // Do any additional setup after loading the view.
         
         print(dataFilePath)
-        
-        
-        loadItems()
-
         
         //將存在Documents裡面的data放回itemArray
         if let  items = defaults.array(forKey: "TodoListArray") as? [Item]{
@@ -48,8 +49,6 @@ class ToDoListViewController: UITableViewController {
         
         //let cell = UITableViewCell(Style: .default, reuseIdentifier:"ToDoItemCell")   不用這行是因為cell一到view之外就會被砍掉，重新製照一個cell
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell" , for: indexPath)
-        
-        print("cell for row at index path call")
         
         let item = itemArray[indexPath.row]
     
@@ -91,6 +90,7 @@ class ToDoListViewController: UITableViewController {
             let newItem = Item(context: self.context)
             newItem.title = textFiled.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             self.itemArray.append(newItem)
             
             self.saveItem()
@@ -118,7 +118,19 @@ class ToDoListViewController: UITableViewController {
         self.tableView.reloadData() //增加東西之後都需要reload data才會將新增的東西顯示出來
     }
     
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()){   //如果request沒有值，就會預設Item.fetchRequest()
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil){   //如果request沒有值，就會預設Item.fetchRequest()
+        
+        let categoryPredicate = NSPredicate(format: "parentCategory.name MATCHES %@ ", selectedCategory!.name!)
+        
+        if let addtionalPredicate = predicate{
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredicate,addtionalPredicate])
+        }else{
+            request.predicate = categoryPredicate
+        }
+
+//        let compoundPredicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categorypredicate,predicate])
+//         request.predicate = compoundPredicate
+        
         do{
            itemArray = try context.fetch(request)
         }catch{
@@ -134,11 +146,11 @@ extension ToDoListViewController : UISearchBarDelegate{         //extension可�
     func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        loadItems(with:request)
+        loadItems(with:request,predicate: predicate)
     }
     
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) { //textDidChange:每次searchbar內容便的時候都會觸發
