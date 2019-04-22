@@ -66,7 +66,7 @@ class ToDoListViewController: UITableViewController {
     
     
     //Mark - TableView Delegate Methods
-    //ells the delegate that the specified row is now selected.
+    //tells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
         if let item = todoItems?[indexPath.row] {

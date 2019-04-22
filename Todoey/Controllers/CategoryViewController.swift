@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class CategoryViewController: UITableViewController {
+class CategoryViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     
@@ -20,17 +20,21 @@ class CategoryViewController: UITableViewController {
         super.viewDidLoad()
         
         loadCategories()
+        
+        tableView.rowHeight = 70
     }
     
     //顯示每一列的資料
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
-        let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell" , for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)  //使用superclass的tableView(tableView, cellForRowAt: indexPath) function裡面的cell
         
         cell.textLabel?.text = categories?[indexPath.row].name ?? "No Category Added Yet"
         
         return cell
     }
+    
+ 
     
     //Mark - TableVIew Datasource Methods
     
@@ -82,6 +86,20 @@ class CategoryViewController: UITableViewController {
         
     }
     
+    //MARK - Delete Data From Swipe
+    
+    override func updateModel(at indexPath: IndexPath) {
+       if let categoryForDeletion =  self.categories?[indexPath.row]{
+            do{
+                try self.realm.write {
+                self.realm.delete(categoryForDeletion)
+                }
+            }catch{
+                print("Error deleting category, \(error)")
+            }
+        }
+    }
+    
     //Mark - Add New Categories
 
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
@@ -107,8 +125,4 @@ class CategoryViewController: UITableViewController {
         
         present(alert, animated: true, completion: nil)
     }
-    
-    
-    
-    
 }
