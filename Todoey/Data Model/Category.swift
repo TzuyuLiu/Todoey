@@ -10,6 +10,7 @@ import Foundation
 import RealmSwift
 class Category:Object{
    @objc dynamic var name : String = ""
+   @objc dynamic var Colour : String = ""
    let items = List<Item>()// List is like array，<>中間放data type，()代表list是空的
 
 }

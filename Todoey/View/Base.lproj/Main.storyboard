@@ -9,7 +9,7 @@
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <scenes>
-        <!--Items-->
+        <!--To Do List View Controller-->
         <scene sceneID="Y0g-AQ-LNn">
             <objects>
                 <tableViewController id="2oj-bN-ddR" customClass="ToDoListViewController" customModule="Todoey" customModuleProvider="target" sceneMemberID="viewController">
@@ -26,7 +26,7 @@
                             </connections>
                         </searchBar>
                         <prototypes>
-                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="Cell" id="VFk-Of-VEN">
+                            <tableViewCell clipsSubviews="YES" contentMode="scaleToFill" preservesSuperviewLayoutMargins="YES" selectionStyle="default" indentationWidth="10" reuseIdentifier="Cell" id="VFk-Of-VEN" customClass="SwipeTableViewCell" customModule="SwipeCellKit">
                                 <rect key="frame" x="0.0" y="72" width="414" height="44"/>
                                 <autoresizingMask key="autoresizingMask"/>
                                 <tableViewCellContentView key="contentView" opaque="NO" clipsSubviews="YES" multipleTouchEnabled="YES" contentMode="center" preservesSuperviewLayoutMargins="YES" insetsLayoutMarginsFromSafeArea="NO" tableViewCell="VFk-Of-VEN" id="Xk9-J2-tkw">
@@ -40,16 +40,17 @@
                             <outlet property="delegate" destination="2oj-bN-ddR" id="LvS-Ir-xaD"/>
                         </connections>
                     </tableView>
-                    <navigationItem key="navigationItem" title="Items" id="0ib-nK-Qkc">
+                    <navigationItem key="navigationItem" id="0ib-nK-Qkc">
                         <barButtonItem key="rightBarButtonItem" systemItem="add" id="CtF-po-POR">
-                            <color key="tintColor" white="1" alpha="1" colorSpace="custom" customColorSpace="genericGamma22GrayColorSpace"/>
                             <connections>
                                 <action selector="addButtonPressed:" destination="2oj-bN-ddR" id="zdY-bz-bKO"/>
                             </connections>
                         </barButtonItem>
                     </navigationItem>
                     <connections>
+                        <outlet property="items" destination="0ib-nK-Qkc" id="1ki-Xf-2HU"/>
                         <outlet property="messageTableView" destination="Gst-Xc-5gA" id="Ifw-IW-pks"/>
+                        <outlet property="searchBar" destination="1TV-Dx-rS3" id="yNj-Bg-s9A"/>
                     </connections>
                 </tableViewController>
                 <placeholder placeholderIdentifier="IBFirstResponder" id="xOM-Zw-W7c" userLabel="First Responder" sceneMemberID="firstResponder"/>
@@ -100,8 +101,8 @@
             <objects>
                 <navigationController automaticallyAdjustsScrollViewInsets="NO" id="6iH-ih-zq1" sceneMemberID="viewController">
                     <toolbarItems/>
-                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" id="eO2-nv-Ij2">
-                        <rect key="frame" x="0.0" y="20" width="414" height="44"/>
+                    <navigationBar key="navigationBar" contentMode="scaleToFill" insetsLayoutMarginsFromSafeArea="NO" largeTitles="YES" id="eO2-nv-Ij2">
+                        <rect key="frame" x="0.0" y="20" width="414" height="96"/>
                         <autoresizingMask key="autoresizingMask"/>
                         <color key="backgroundColor" red="0.0" green="0.47843137250000001" blue="1" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>
                         <color key="barTintColor" red="0.28235294119999998" green="0.4941176471" blue="0.69019607839999997" alpha="1" colorSpace="custom" customColorSpace="sRGB"/>

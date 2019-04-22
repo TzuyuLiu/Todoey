@@ -8,16 +8,22 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
-class ToDoListViewController: UITableViewController {
+class ToDoListViewController: SwipeTableViewController{
 
     @IBOutlet var messageTableView: UITableView!
     
-    let defaults = UserDefaults.standard
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Item.plist")
     var todoItems : Results<Item>?
     let realm = try! Realm()
-    var selectedCategory : Category?{
+    
+    
+    @IBOutlet weak var items: UINavigationItem!
+    
+    @IBOutlet weak var searchBar: UISearchBar!
+    
+    
+    var selectedCategory : Category?{  //將父節點(category) data model鞥擁有的傳送到這裡來，宣告成selectedCategory
         didSet{
             loadItems()
         }
@@ -25,8 +31,9 @@ class ToDoListViewController: UITableViewController {
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        tableView.rowHeight = 65
         // Do any additional setup after loading the view.
-        print(dataFilePath)
+        //print(dataFilePath)
         
         //將存在Documents裡面的data放回itemArray
 //        if let  items = defaults.array(forKey: "TodoListArray") as? [Item]{
@@ -34,6 +41,43 @@ class ToDoListViewController: UITableViewController {
 //        }
 //      saveItems()
         
+        tableView.separatorStyle = .none
+    }
+    
+    //這個方法是在view出現的前一刻才會執行
+    override func viewWillAppear(_ animated: Bool) {
+        
+        items.title = selectedCategory?.name
+     
+        //多用guard let而不是if let,因為用if let就已經是預設為會執行裡面的東西
+        guard let colourHex = selectedCategory?.Colour else {fatalError()}
+        updateNavBar(withHexCode: colourHex)
+
+    }
+    
+    //會在view師消失時執行
+    //將顏色調回categoryview的顏色
+    override func viewWillDisappear(_ animated: Bool) {
+        updateNavBar(withHexCode: "1D9BF6")
+    }
+    
+    
+    //MARK- Nav Bar Setup Methods
+    
+    func updateNavBar(withHexCode colourHexCode: String){
+        
+        //如果在viewDidLoad做，就會因為navigationController尚未載入而出現fatalError，guard let 會再出現error時就暫停程式
+        guard let navBar = navigationController?.navigationBar else {fatalError("Navigation controller does not exist.")}
+            
+        guard let navBarColour = UIColor(hexString: colourHexCode) else {fatalError()}
+        
+        navBar.barTintColor = navBarColour
+            
+        navBar.tintColor = ContrastColorOf(navBarColour, returnFlat: true)
+            
+        navBar.largeTitleTextAttributes = [NSAttributedString.Key.foregroundColor : ContrastColorOf(navBarColour, returnFlat: true) ]
+            
+        searchBar.barTintColor = navBarColour // 設定searchBar的顏色
     }
 
     //Mark - Tableview Datasource Methods 有兩個method
@@ -43,15 +87,22 @@ class ToDoListViewController: UITableViewController {
         return todoItems?.count ?? 1   //if todoItem is not nil, return count , else return 1
     }
     
-    //顯示每一列的資料
+    //顯示每列的資料
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
         //let cell = UITableViewCell(Style: .default, reuseIdentifier:"ToDoItemCell")   不用這行是因為cell一到view之外就會被砍掉，重新製照一個cell
-        let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell" , for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
         
         if let item = todoItems?[indexPath.row]  { // if todoItem is not nil , grab the item at [indexPath.row]
             
             cell.textLabel?.text = item.title
+            
+            //調整每一個cell的顏色深度
+            if let colour = UIColor(hexString: selectedCategory!.Colour)?.darken(byPercentage:CGFloat(indexPath.row)/CGFloat(todoItems!.count)){
+                cell.backgroundColor = colour
+                cell.textLabel?.textColor = ContrastColorOf(colour, returnFlat: true)
+            }
+       
             
             //Ternary operator ==>
             // value = condition ? valueIfTrue : valueIfFalse
@@ -60,12 +111,12 @@ class ToDoListViewController: UITableViewController {
             cell.textLabel?.text = "No Items Add"
         }
 
-        
         return cell
     }
     
     
     //Mark - TableView Delegate Methods
+    
     //tells the delegate that the specified row is now selected.
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
@@ -85,7 +136,6 @@ class ToDoListViewController: UITableViewController {
     }
     //Mark - Add New Items
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
-        
         
         var textFiled = UITextField()
         
@@ -113,7 +163,6 @@ class ToDoListViewController: UITableViewController {
                 }
             }
             self.tableView.reloadData()
-
             
        }
         
@@ -126,6 +175,19 @@ class ToDoListViewController: UITableViewController {
         alert.addAction(action)
         
         present(alert, animated: true, completion: nil)
+    }
+    
+    //MARK - Delete Data From Swipe
+    override func updateModel(at indexPath: IndexPath) {
+        if let itemForDeletion = todoItems?[indexPath.row]{
+            do{
+                try realm.write {
+                     realm.delete(itemForDeletion)
+                }
+            } catch{
+                print("Error deleting item, \(error)")
+            }
+        }
     }
     
     // Mark - model manupulation Method

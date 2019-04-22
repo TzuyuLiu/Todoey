@@ -8,12 +8,12 @@
 
 import UIKit
 import RealmSwift
+import ChameleonFramework
 
 class CategoryViewController: SwipeTableViewController{
     
     let realm = try! Realm()
     
-
     var categories: Results<Category>?    //data type是看category object回傳的型態決定，?:optional
     
     override func viewDidLoad() {
@@ -21,7 +21,11 @@ class CategoryViewController: SwipeTableViewController{
         
         loadCategories()
         
-        tableView.rowHeight = 70
+        tableView.rowHeight = 65
+        
+        tableView.separatorColor = .none
+        
+        
     }
     
     //顯示每一列的資料
@@ -29,7 +33,18 @@ class CategoryViewController: SwipeTableViewController{
         
         let cell = super.tableView(tableView, cellForRowAt: indexPath)  //使用superclass的tableView(tableView, cellForRowAt: indexPath) function裡面的cell
         
-        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Category Added Yet"
+        if let category = categories?[indexPath.row]{
+            
+            cell.textLabel?.text = category.name
+            
+            guard let categoryColour = UIColor(hexString: category.Colour) else { fatalError()}
+            
+            cell.backgroundColor = categoryColour
+
+            cell.textLabel?.textColor = ContrastColorOf(categoryColour, returnFlat: true)
+        }
+
+        
         
         return cell
     }
@@ -68,7 +83,7 @@ class CategoryViewController: SwipeTableViewController{
     
     func save(category: Category){
         do{
-            try realm.write {   //commit change realm
+            try realm.write {   //commit change realm，realm.write會丟出錯誤
                 realm.add(category)
             }
         }catch{
@@ -79,7 +94,7 @@ class CategoryViewController: SwipeTableViewController{
         
     }
     
-    //load up all of the categories that we currently own
+    //會載入所有category的東西
     func loadCategories(){
         categories = realm.objects(Category.self)   //會拿出所有在realm且type是category的東西
         tableView.reloadData()
@@ -111,7 +126,7 @@ class CategoryViewController: SwipeTableViewController{
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
             let newCategory = Category()
             newCategory.name = textField.text!
-            
+            newCategory.Colour = UIColor.randomFlat.hexValue()
             self.save(category: newCategory)
             
         }
