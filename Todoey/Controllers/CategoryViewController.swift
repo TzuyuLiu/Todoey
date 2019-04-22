@@ -7,13 +7,14 @@
 //
 
 import UIKit
-import CoreData
+import RealmSwift
 
 class CategoryViewController: UITableViewController {
+    
+    let realm = try! Realm()
+    
 
-    var categories = [Category]()
-
-    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
+    var categories: Results<Category>?    //data type是看category object回傳的型態決定，?:optional
     
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -26,7 +27,7 @@ class CategoryViewController: UITableViewController {
         
         let cell = tableView.dequeueReusableCell(withIdentifier: "CategoryCell" , for: indexPath)
         
-        cell.textLabel?.text = categories[indexPath.row].name
+        cell.textLabel?.text = categories?[indexPath.row].name ?? "No Category Added Yet"
         
         return cell
     }
@@ -35,7 +36,7 @@ class CategoryViewController: UITableViewController {
     
     //顯示的列數
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return categories.count
+        return categories?.count ?? 1   //if categories not nil , return number , else return 1
     }
     
     
@@ -53,7 +54,7 @@ class CategoryViewController: UITableViewController {
         let destinationVC = segue.destination as! ToDoListViewController    //所以若有多個view，在此就可以選擇要去哪個畫面
         
         if let indexPath = tableView.indexPathForSelectedRow{
-            destinationVC.selectedCategory = categories[indexPath.row]
+            destinationVC.selectedCategory = categories?[indexPath.row] //indexPath.row 會觸發 segue: UIStoryboardSegue
         }
     }
     
@@ -61,9 +62,11 @@ class CategoryViewController: UITableViewController {
     
     //Mark - Manipulation Methods
     
-    func saveCategories(){
+    func save(category: Category){
         do{
-            try context.save()
+            try realm.write {   //commit change realm
+                realm.add(category)
+            }
         }catch{
             print("Error saving category \(error)")
         }
@@ -72,15 +75,9 @@ class CategoryViewController: UITableViewController {
         
     }
     
+    //load up all of the categories that we currently own
     func loadCategories(){
-        
-        let request : NSFetchRequest<Category> = Category.fetchRequest()
-        do{
-            categories = try context.fetch(request)
-        }catch{
-            print("Error loading categories \(error)")
-        }
-        
+        categories = realm.objects(Category.self)   //會拿出所有在realm且type是category的東西
         tableView.reloadData()
         
     }
@@ -94,12 +91,10 @@ class CategoryViewController: UITableViewController {
         let alert = UIAlertController(title: "Add New Category", message: "", preferredStyle: .alert)
         
         let action = UIAlertAction(title: "Add", style: .default) { (action) in
-            let newCategory = Category(context: self.context)
+            let newCategory = Category()
             newCategory.name = textField.text!
             
-            self.categories.append(newCategory)
-            
-            self.saveCategories()
+            self.save(category: newCategory)
             
         }
         
